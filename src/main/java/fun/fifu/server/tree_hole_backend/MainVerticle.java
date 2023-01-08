@@ -30,6 +30,7 @@ public class MainVerticle extends AbstractVerticle {
 
     router.get("/api/read_index/:hole/:index")
       .handler(ctx -> {
+        ctx.response().putHeader("content-type", "text/json");
         String hole = ctx.pathParam("hole");
         int index = Integer.parseInt(ctx.pathParam("index"));
 
