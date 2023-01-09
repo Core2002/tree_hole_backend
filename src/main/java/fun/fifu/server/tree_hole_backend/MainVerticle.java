@@ -27,27 +27,42 @@ public class MainVerticle extends AbstractVerticle {
       .put("db_name", "tree_hole")
     );
 
-    router.get("/api/read_index/:hole/:index")
-      .handler(ctx -> {
-        ctx.response().putHeader("content-type", "text/json");
-        String hole = ctx.pathParam("hole");
-        int index = Integer.parseInt(ctx.pathParam("index"));
-        var query = new JsonObject().put("hole", hole);
-        client.find(collectionNameFormat.format(new Date()), query, res -> {
-          if (res.succeeded() && index < res.result().size()) {
-            List<JsonObject> result = res.result();
-            ctx.response().end(getPojoJson(getPojo(result.get(index))));
-          } else {
-            ctx.response().end(getPojoJson(
-              new HoleMessage()
-                .hole("")
-                .message("")
-                .date(System.currentTimeMillis())
-                .like(0L)
-                .ip("")));
-          }
-        });
+    router.get("/api/read_index/:hole/:index").handler(ctx -> {
+      ctx.response().putHeader("content-type", "text/json");
+      String hole = ctx.pathParam("hole");
+      int index = Integer.parseInt(ctx.pathParam("index"));
+      var query = new JsonObject().put("hole", hole);
+      client.find(collectionNameFormat.format(new Date()), query, res -> {
+        if (res.succeeded() && index < res.result().size()) {
+          List<JsonObject> result = res.result();
+          ctx.response().end(getPojoJson(getPojo(result.get(index))));
+        } else {
+          ctx.response().end(getPojoJson(
+            new HoleMessage()
+              .hole("")
+              .message("")
+              .date(System.currentTimeMillis())
+              .like(0L)
+              .ip("")));
+        }
       });
+    });
+
+    router.get("/api/read_hole_size/:hole").handler(ctx -> {
+      ctx.response().putHeader("content-type", "text/json");
+      String hole = ctx.pathParam("hole");
+      client.count(collectionNameFormat.format(new Date()), new JsonObject().put("hole", hole), res -> {
+        if (res.succeeded()) {
+          ctx.response().end(
+            new JsonObject()
+              .put("size", res.result())
+              .toString()
+          );
+        } else {
+          ctx.response().end("{\"size\":-1}");
+        }
+      });
+    });
 
     server.requestHandler(router).listen(8080);
   }
