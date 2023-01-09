@@ -10,11 +10,12 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.web.Router;
 
-import java.util.Calendar;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
 public class MainVerticle extends AbstractVerticle {
+  SimpleDateFormat collectionNameFormat = new SimpleDateFormat("yyyy-MM");
 
   @Override
   public void start(Promise<Void> startPromise) throws Exception {
@@ -31,12 +32,8 @@ public class MainVerticle extends AbstractVerticle {
         ctx.response().putHeader("content-type", "text/json");
         String hole = ctx.pathParam("hole");
         int index = Integer.parseInt(ctx.pathParam("index"));
-
-        Calendar instance = Calendar.getInstance();
-        instance.setTime(new Date());
-        instance.add(Calendar.MONTH, -1);
-
-        client.find("messages", new JsonObject().put("hole", hole), res -> {
+        var query = new JsonObject().put("hole", hole);
+        client.find(collectionNameFormat.format(new Date()), query, res -> {
           if (res.succeeded() && index < res.result().size()) {
             List<JsonObject> result = res.result();
             ctx.response().end(getPojoJson(getPojo(result.get(index))));
