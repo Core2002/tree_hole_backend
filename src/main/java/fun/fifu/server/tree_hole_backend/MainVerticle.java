@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import fun.fifu.server.tree_hole_backend.pojo.HoleMessage;
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonObject;
@@ -16,7 +15,6 @@ import java.util.Date;
 import java.util.List;
 
 public class MainVerticle extends AbstractVerticle {
-  public static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
   @Override
   public void start(Promise<Void> startPromise) throws Exception {
@@ -38,28 +36,37 @@ public class MainVerticle extends AbstractVerticle {
         instance.setTime(new Date());
         instance.add(Calendar.MONTH, -1);
 
-        client.find("messages", new JsonObject(), res -> {
+        client.find("messages", new JsonObject().put("hole", hole), res -> {
           if (res.succeeded() && index < res.result().size()) {
             List<JsonObject> result = res.result();
-            ctx.response().end(gson.toJson(HoleMessage.fromJsonObject(result.get(index))));
+            ctx.response().end(getPojoJson(getPojo(result.get(index))));
           } else {
-            ctx.response().end(gson.toJson(
+            ctx.response().end(getPojoJson(
               new HoleMessage()
                 .hole("")
                 .message("")
-                .date(new Date())
-                .like(0)
-                .ip("")
-            ));
+                .date(System.currentTimeMillis())
+                .like(0L)
+                .ip("")));
           }
         });
       });
 
-    router.get("/some/path")
-      .respond(ctx -> {
-        return Future.succeededFuture("nmsl");
-      });
-
     server.requestHandler(router).listen(8080);
   }
+
+  public static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+  public HoleMessage getPojo(JsonObject jsonObject) {
+    return gson.fromJson(jsonObject.toString(), HoleMessage.class);
+  }
+
+  public String getPojoJson(HoleMessage pojo) {
+    return gson.toJson(pojo);
+  }
+
+  public JsonObject getPojoJsonObject(HoleMessage pojo) {
+    return new JsonObject(getPojoJson(pojo));
+  }
+
 }
