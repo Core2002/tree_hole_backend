@@ -76,7 +76,6 @@ public class MainVerticle extends AbstractVerticle {
         .like(0L)
         .date(System.currentTimeMillis())
         .ip(ctx.request().localAddress().hostAddress());
-
       client.save(collectionNameFormat.format(new Date()), getPojoJsonObject(holeMessage), res -> {
         if (res.succeeded()) {
           ctx.response().end("{\"res\":\"200 ok\"}");
@@ -88,6 +87,27 @@ public class MainVerticle extends AbstractVerticle {
           );
         }
       });
+    });
+
+    router.get("/api/like_message/:message_id").handler(ctx -> {
+      ctx.response().putHeader("content-type", "text/json");
+      String message_id = ctx.pathParam("message_id");
+
+      client.findOneAndUpdate(collectionNameFormat.format(new Date()),
+        new JsonObject().put("_id", message_id),
+        new JsonObject().put("$inc", new JsonObject().put("like", 1)),
+        res -> {
+          if (res.succeeded()) {
+            ctx.response().end("{\"res\":\"200 ok\"}");
+          } else {
+            ctx.response().end(
+              new JsonObject()
+                .put("res", res.result())
+                .toString()
+            );
+          }
+        }
+      );
     });
 
     server.requestHandler(router).listen(8080);
