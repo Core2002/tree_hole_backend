@@ -9,6 +9,7 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.web.Router;
+import org.bson.types.ObjectId;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -60,6 +61,31 @@ public class MainVerticle extends AbstractVerticle {
           );
         } else {
           ctx.response().end("{\"size\":-1}");
+        }
+      });
+    });
+
+    router.get("/api/add_hole_message/:hole/:message").handler(ctx -> {
+      ctx.response().putHeader("content-type", "text/json");
+      String hole = ctx.pathParam("hole");
+      String message = ctx.pathParam("message");
+      HoleMessage holeMessage = new HoleMessage()
+        ._id(new ObjectId().toHexString())
+        .hole(hole)
+        .message(message)
+        .like(0L)
+        .date(System.currentTimeMillis())
+        .ip(ctx.request().localAddress().hostAddress());
+
+      client.save(collectionNameFormat.format(new Date()), getPojoJsonObject(holeMessage), res -> {
+        if (res.succeeded()) {
+          ctx.response().end("{\"res\":\"200 ok\"}");
+        } else {
+          ctx.response().end(
+            new JsonObject()
+              .put("res", res.result())
+              .toString()
+          );
         }
       });
     });
