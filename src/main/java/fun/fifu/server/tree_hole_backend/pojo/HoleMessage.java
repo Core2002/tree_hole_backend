@@ -11,5 +11,6 @@ public class HoleMessage {
   String message;
   Long date;
   Long like;
+  Long report;
   String ip;
 }
