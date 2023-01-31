@@ -9,8 +9,8 @@ public class HoleMessage {
   String _id;
   String hole;
   String message;
-  Long date;
-  Long like;
-  Long report;
+  Long date = 0L;
+  Long like = 0L;
+  Long report = 0L;
   String ip;
 }
