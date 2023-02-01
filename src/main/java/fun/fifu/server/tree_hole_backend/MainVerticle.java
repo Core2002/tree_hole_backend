@@ -36,16 +36,19 @@ public class MainVerticle extends AbstractVerticle {
       client.find(collectionNameFormat.format(new Date()), query, res -> {
         if (res.succeeded() && index < res.result().size()) {
           List<JsonObject> result = res.result();
-          ctx.response().end(getPojoJson(getPojo(result.get(index))));
-        } else {
-          ctx.response().end(getPojoJson(
-            new HoleMessage()
-              .hole("")
-              .message("")
-              .date(System.currentTimeMillis())
-              .like(0L)
-              .ip("")));
+          HoleMessage pojo = getPojo(result.get(index));
+          if (pojo.report() < 3) {
+            ctx.response().end(getPojoJson(pojo));
+            return;
+          }
         }
+        ctx.response().end(getPojoJson(
+          new HoleMessage()
+            .hole("")
+            .message("")
+            .date(System.currentTimeMillis())
+            .like(0L)
+            .ip("")));
       });
     });
 
