@@ -44,6 +44,7 @@ public class MainVerticle extends AbstractVerticle {
         }
         ctx.response().end(getPojoJson(
           new HoleMessage()
+            ._id("blocked")
             .hole("")
             .message("")
             .date(System.currentTimeMillis())
