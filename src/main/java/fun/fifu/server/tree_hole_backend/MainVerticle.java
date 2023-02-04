@@ -40,11 +40,14 @@ public class MainVerticle extends AbstractVerticle {
           if (pojo.report() < 3) {
             ctx.response().end(getPojoJson(pojo));
             return;
+          } else {
+            ctx.response().end(getPojoJson(pojo.message("")));
+            return;
           }
         }
         ctx.response().end(getPojoJson(
           new HoleMessage()
-            ._id("blocked")
+            ._id("null")
             .hole("")
             .message("")
             .date(System.currentTimeMillis())
