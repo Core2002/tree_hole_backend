@@ -35,24 +35,19 @@ public class MainVerticle extends AbstractVerticle {
       var query = new JsonObject().put("hole", hole);
       client.find(collectionNameFormat.format(new Date()), query, res -> {
         if (res.succeeded() && index < res.result().size()) {
-          List<JsonObject> result = res.result();
-          HoleMessage pojo = getPojo(result.get(index));
-          if (pojo.report() < 3) {
-            ctx.response().end(getPojoJson(pojo));
-            return;
-          } else {
-            ctx.response().end(getPojoJson(pojo.message("")));
-            return;
-          }
+          HoleMessage pojo = getPojo(res.result().get(index));
+          String message = pojo.report() < 3 ? pojo.message() : "";
+          ctx.response().end(getPojoJson(pojo.message(message)));
+        } else {
+          ctx.response().end(getPojoJson(
+            new HoleMessage()
+              ._id("null")
+              .hole("")
+              .message("")
+              .date(System.currentTimeMillis())
+              .like(0L)
+              .ip("")));
         }
-        ctx.response().end(getPojoJson(
-          new HoleMessage()
-            ._id("null")
-            .hole("")
-            .message("")
-            .date(System.currentTimeMillis())
-            .like(0L)
-            .ip("")));
       });
     });
 
